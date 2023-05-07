@@ -10,6 +10,8 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    expose:
+      - "5672"
     volumes:
       - ./rabbitmq/data:/var/lib/rabbitmq
       - ./rabbitmq/log:/var/log/rabbitmq

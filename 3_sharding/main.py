@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-import requests
 import uvicorn
 import pika
 
@@ -14,7 +13,9 @@ credentials = pika.PlainCredentials('guest', 'guest')
 
 def create_queue(queue_name: str):
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='127.0.0.1', port=5672, credentials=credentials))
+    # ¿Para que creamos otro canal, si el canal ya existe y fue con el que llamamos?
     channel = connection.channel()
+    # Declarar cola, crear si es necesario. Este método crea o comprueba una cola.
     channel.queue_declare(queue=queue_name)
     connection.close()
 
@@ -29,6 +30,7 @@ def consume_messages_from_rabbitmq(queue_name: str):
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='127.0.0.1', port=5672, credentials=credentials))
     channel = connection.channel()
     channel.queue_declare(queue=queue_name)
+    # el auto_ack es "Dígale al corredor que no espere una respuesta". ¿Por qué espero una respuesta?
     method_frame, header_frame, body = channel.basic_get(queue=queue_name, auto_ack=True)
     if method_frame:
         print("Mensaje recibido: ", body)
@@ -70,11 +72,15 @@ def measure():
 
 if __name__ == '__main__':
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    # Creamos un canal para comunicarnos con RabbitMQ
     channel = connection.channel()
 
+    # ¿Esto qué hace? ¿Para que hacemos esto?
     channel.queue_declare(queue='mi_cola')
 
-    channel.basic_publish(exchange='', routing_key='mi_cola', body='Hola mundo!')
+    # Publica en el canal con el intercambio, la clave de enrutamiento y el cuerpo proporcionados.
+    # ¿Qué hacen los parámetros?
+    channel.basic_publish(exchange='', routing_key='mi_cola', body='Hola, mundo!')
     print("Mensaje enviado")
 
     connection.close()
