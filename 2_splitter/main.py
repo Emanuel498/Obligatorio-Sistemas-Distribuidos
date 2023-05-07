@@ -1,7 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-import requests
 import uvicorn
 
 class Measure(BaseModel):
