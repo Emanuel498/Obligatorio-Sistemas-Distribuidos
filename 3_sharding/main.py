@@ -69,12 +69,12 @@ def measure():
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 if __name__ == '__main__':
-    connection = pika.BlockingConnection(pika.ConnectionParameters('127.0.0.1', 5672, '/', pika.credentials.PlainCredentials('guest', 'guest')))
+    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
 
     channel.queue_declare(queue='mi_cola')
 
-    channel.basic_publish(exchange='', routing_key='mi_cola', body='Hola, mundo!')
+    channel.basic_publish(exchange='', routing_key='mi_cola', body='Hola mundo!')
     print("Mensaje enviado")
 
     connection.close()
