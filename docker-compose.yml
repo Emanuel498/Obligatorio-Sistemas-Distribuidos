@@ -20,5 +20,6 @@ services:
       retries: 3
     ports:
       - "5672:5672"
+      - "5673:5672"
     expose:
       - "5672"

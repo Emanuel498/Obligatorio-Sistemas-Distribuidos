@@ -24,7 +24,7 @@ MESSAGES=[
 ]
 
 def create_queue(alert:Alert):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=QUEUE_HOST, port=5672))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=QUEUE_HOST, port=balance_endpoints()))
     channel = connection.channel()
     #Declaramos la cola que va a utiliar
     channel.queue_declare(queue=QUEUE_NAME) 
@@ -38,7 +38,7 @@ def create_queue(alert:Alert):
 
 app = FastAPI()
 
-endpoints = ["http://localhost:8000", "http://localhost:8001"]
+portsFromRabbit = [5672, 5673]
 
 endpoint_flag = True
 
@@ -54,9 +54,9 @@ def balance_endpoints():
     global endpoint_flag
     if endpoint_flag:
         endpoint_flag = False
-        return endpoints[0]
+        return portsFromRabbit[0]
     endpoint_flag = True
-    return endpoints[1]
+    return portsFromRabbit[1]
 
 if __name__ == '__main__':
 
