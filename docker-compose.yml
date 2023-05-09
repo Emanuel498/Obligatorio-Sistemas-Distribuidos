@@ -1,7 +1,18 @@
 version: "3.9"
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
+  producer:
+    build: ./3_sharding
+    environment:
+      - QUEUE_HOST=queue
+      - QUEUE_NAME=test_queue
+    depends_on:
+      queue:
+        condition: service_healthy
+    ports:
+      - "80:80"
+
+  queue:
+    image: rabbitmq:3-alpine
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       interval: 10s
@@ -9,28 +20,5 @@ services:
       retries: 3
     ports:
       - "5672:5672"
-      - "15672:15672"
     expose:
       - "5672"
-    volumes:
-      - ./rabbitmq/data:/var/lib/rabbitmq
-      - ./rabbitmq/log:/var/log/rabbitmq
-    environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
-
-  fastapi:
-    build:
-      context: ./3_sharding
-      dockerfile: Dockerfile
-    ports:
-      - "80:80"
-    depends_on:
-      rabbitmq:
-         condition: service_healthy
-    environment:
-      - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_QUEUE=myqueue
-      - RABBITMQ_USER=guest
-      - RABBITMQ_PASSWORD=guest
