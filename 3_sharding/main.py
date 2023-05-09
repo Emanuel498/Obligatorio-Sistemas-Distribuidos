@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 import uvicorn
 import pika
+import json
 import os
 
 QUEUE_HOST = os.getenv('QUEUE_HOST', 'localhost')
@@ -22,16 +23,16 @@ MESSAGES=[
     "TEST 5"
 ]
 
-def create_queue():
+def create_queue(alert:Alert):
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=QUEUE_HOST, port=5672))
     channel = connection.channel()
     #Declaramos la cola que va a utiliar
     channel.queue_declare(queue=QUEUE_NAME) 
     
-    for message in MESSAGES:
-        #Publico los mensajes en la cola
-        channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=message)
-        print("[x] Mensaje enviado: %s " % message)
+    #Publico los mensajes en la cola
+    jsonAlert = json.dumps(alert.__dict__)
+    channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=jsonAlert)
+    print("[x] Mensaje enviado: %s " % jsonAlert)
     
     connection.close()
 
@@ -41,10 +42,10 @@ endpoints = ["http://localhost:8000", "http://localhost:8001"]
 
 endpoint_flag = True
 
-@app.get("/measure")
-def measure():
+@app.post("/measure")
+def measure(alert:Alert):
     try:
-        create_queue()
+        create_queue(alert)
     except Exception as e:
         print(e)
         return JSONResponse(content={"error": str(e)}, status_code=500)
