@@ -12,18 +12,11 @@ QUEUE_NAME = os.getenv('QUEUE_NAME', 'test')
 ALERTS_QUEUE_PRIMARY = os.getenv('ALERTS_QUEUE_PRIMARY', 'alerts-queue-1')
 ALERTS_QUEUE_SECONDARY = os.getenv('ALERTS_QUEUE_SECONDARY', 'alerts-queue-2')
 
+# Objeto alerta que vamos a obtener como request.
 class Alert(BaseModel):
     name: str
     flow: float
     location: str
-
-MESSAGES=[
-    "TEST 1",
-    "TEST 2",
-    "TEST 3",
-    "TEST 4",
-    "TEST 5"
-]
 
 def create_queue(alert:Alert):
     hostSend = balance_endpoints()
@@ -37,20 +30,26 @@ def create_queue(alert:Alert):
     channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=jsonAlert)
 
     connection.close()
-    return ("Mensaje enviado: {} por la cola {} ".format(jsonAlert, hostSend))
+    # Realizamos un mensaje legible para el usuario final.
+    responseFinal = "name:{}, flow:{}, location:{}".format(alert.__dict__['name'], alert.__dict__['flow'], alert.__dict__['location'])
+    return ("Mensaje enviado: {} por la cola {} ".format(responseFinal, hostSend))
 
 app = FastAPI()
 
+# Flag que nos ayudará a equilibrar el envio a las colas de la función balance_endpoints()
 endpoint_flag = True
 
 @app.post("/measure")
 def measure(alert:Alert):
     try:
-        return JSONResponse(content={create_queue(alert)}, status_code=200)
+        # Ejecutamos el envio de la alerta a la cola y además obtenemos el mensaje para enviar como response.
+        sendResponse = create_queue(alert)
+        return JSONResponse(sendResponse, status_code=200)
     except Exception as e:
         print(e)
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
+# Realizamos un round robin básico para que vaya cambiando de queues.
 def balance_endpoints():
     global endpoint_flag
     if endpoint_flag:
