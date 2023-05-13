@@ -7,8 +7,10 @@ import pika
 import json
 import os
 
-QUEUE_HOST = os.getenv('QUEUE_HOST', 'localhost')
+#QUEUE_HOST = os.getenv('QUEUE_HOST', 'localhost')
 QUEUE_NAME = os.getenv('QUEUE_NAME', 'test')
+ALERTS_QUEUE_PRIMARY = os.getenv('ALERTS_QUEUE_PRIMARY', 'alerts-queue-1')
+ALERTS_QUEUE_SECONDARY = os.getenv('ALERTS_QUEUE_SECONDARY', 'alerts-queue-2')
 
 class Alert(BaseModel):
     name: str
@@ -24,7 +26,8 @@ MESSAGES=[
 ]
 
 def create_queue(alert:Alert):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=QUEUE_HOST, port=balance_endpoints()))
+    hostSend = balance_endpoints()
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostSend, port=5672))
     channel = connection.channel()
     #Declaramos la cola que va a utiliar
     channel.queue_declare(queue=QUEUE_NAME) 
@@ -32,20 +35,18 @@ def create_queue(alert:Alert):
     #Publico los mensajes en la cola
     jsonAlert = json.dumps(alert.__dict__)
     channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=jsonAlert)
-    print("[x] Mensaje enviado: %s " % jsonAlert)
-    
+
     connection.close()
+    return ("Mensaje enviado: {} por la cola {} ".format(jsonAlert, hostSend))
 
 app = FastAPI()
-
-portsFromRabbit = [5672, 5673]
 
 endpoint_flag = True
 
 @app.post("/measure")
 def measure(alert:Alert):
     try:
-        create_queue(alert)
+        return JSONResponse(content={create_queue(alert)}, status_code=200)
     except Exception as e:
         print(e)
         return JSONResponse(content={"error": str(e)}, status_code=500)
@@ -54,9 +55,9 @@ def balance_endpoints():
     global endpoint_flag
     if endpoint_flag:
         endpoint_flag = False
-        return portsFromRabbit[0]
+        return ALERTS_QUEUE_PRIMARY
     endpoint_flag = True
-    return portsFromRabbit[1]
+    return ALERTS_QUEUE_SECONDARY
 
 if __name__ == '__main__':
 
