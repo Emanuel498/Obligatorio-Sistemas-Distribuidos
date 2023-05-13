@@ -1,81 +1,63 @@
+#!/usr/bin/env python
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-import requests
+from fastapi.responses import JSONResponse
 import uvicorn
 import pika
+import json
+import os
 
+#QUEUE_HOST = os.getenv('QUEUE_HOST', 'localhost')
+QUEUE_NAME = os.getenv('QUEUE_NAME', 'test')
+ALERTS_QUEUE_PRIMARY = os.getenv('ALERTS_QUEUE_PRIMARY', 'alerts-queue-1')
+ALERTS_QUEUE_SECONDARY = os.getenv('ALERTS_QUEUE_SECONDARY', 'alerts-queue-2')
+
+# Objeto alerta que vamos a obtener como request.
 class Alert(BaseModel):
     name: str
     flow: float
     location: str
 
-credentials = pika.PlainCredentials('guest', 'guest')
-
-def create_queue(queue_name: str):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host='127.0.0.1', port=5672, credentials=credentials))
+def create_queue(alert:Alert):
+    hostSend = balance_endpoints()
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostSend, port=5672))
     channel = connection.channel()
-    channel.queue_declare(queue=queue_name)
-    connection.close()
+    #Declaramos la cola que va a utiliar
+    channel.queue_declare(queue=QUEUE_NAME) 
+    
+    #Publico los mensajes en la cola
+    jsonAlert = json.dumps(alert.__dict__)
+    channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=jsonAlert)
 
-def publish_message_to_rabbitmq(queue_name: str, message: str):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host='127.0.0.1', port=5672, credentials=credentials))
-    channel = connection.channel()
-    channel.queue_declare(queue=queue_name)
-    channel.basic_publish(exchange='', routing_key=queue_name, body=message)
     connection.close()
-
-def consume_messages_from_rabbitmq(queue_name: str):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host='127.0.0.1', port=5672, credentials=credentials))
-    channel = connection.channel()
-    channel.queue_declare(queue=queue_name)
-    method_frame, header_frame, body = channel.basic_get(queue=queue_name, auto_ack=True)
-    if method_frame:
-        print("Mensaje recibido: ", body)
-    else:
-        print("No hay mensajes en la cola.")
-    connection.close()
-
+    # Realizamos un mensaje legible para el usuario final.
+    responseFinal = "name:{}, flow:{}, location:{}".format(alert.__dict__['name'], alert.__dict__['flow'], alert.__dict__['location'])
+    return ("Mensaje enviado: {} por la cola {} ".format(responseFinal, hostSend))
 
 app = FastAPI()
 
-endpoints = ["http://localhost:8000", "http://localhost:8001"]
-
+# Flag que nos ayudará a equilibrar el envio a las colas de la función balance_endpoints()
 endpoint_flag = True
 
+@app.post("/measure")
+def measure(alert:Alert):
+    try:
+        # Ejecutamos el envio de la alerta a la cola y además obtenemos el mensaje para enviar como response.
+        sendResponse = create_queue(alert)
+        return JSONResponse(sendResponse, status_code=200)
+    except Exception as e:
+        print(e)
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+# Realizamos un round robin básico para que vaya cambiando de queues.
 def balance_endpoints():
     global endpoint_flag
     if endpoint_flag:
         endpoint_flag = False
-        return endpoints[0]
+        return ALERTS_QUEUE_PRIMARY
     endpoint_flag = True
-    return endpoints[1]
-
-@app.post("/enqueue")
-def post_message_to_rabbitmq():
-    try:
-        publish_message_to_rabbitmq("alertas", "alerta")
-        return {"message": "Mensaje enviado correctamente a la cola."}
-    except Exception as e:
-        print(e)
-        return JSONResponse(content={"error": str(e)}, status_code=500)
-
-@app.post("/measure")
-def measure():
-    try:
-        return JSONResponse(content={"message": consume_messages_from_rabbitmq("alertas")}, status_code=200)
-    except Exception as e:
-        print(e)
-        return JSONResponse(content={"error": str(e)}, status_code=500)
+    return ALERTS_QUEUE_SECONDARY
 
 if __name__ == '__main__':
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-    channel = connection.channel()
 
-    channel.queue_declare(queue='mi_cola')
-
-    channel.basic_publish(exchange='', routing_key='mi_cola', body='Hola mundo!')
-    print("Mensaje enviado")
-
-    connection.close()
     uvicorn.run(app, host="0.0.0.0", port=80)
