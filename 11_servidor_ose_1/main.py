@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+import pika, sys, os
+
+QUEUE_NAME = os.getenv('QUEUE_NAME', 'test_queue')
+ALERTS_QUEUE_PRIMARY = os.getenv('ALERTS_QUEUE_PRIMARY', 'alerts-queue-1')
+ALERTS_QUEUE_SECONDARY = os.getenv('ALERTS_QUEUE_SECONDARY', 'alerts-queue-2')
+
+def main():
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=ALERTS_QUEUE_PRIMARY, port=5672))
+    print('Iniciando')
+    channel = connection.channel()
+
+    channel.queue_declare(queue=QUEUE_NAME)
+
+    def callback(ch, method, properties, body):
+        print(" [x] Received %r" % body)
+
+    channel.basic_consume(queue=QUEUE_NAME, on_message_callback=callback, auto_ack=True)
+
+    print(' [*] Waiting for messages. To exit press CTRL+C')
+    channel.start_consuming()
+
+if __name__ == '__main__':
+    print('Iniciando')
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Interrupted')
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
