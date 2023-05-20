@@ -8,7 +8,7 @@ import json
 import os
 
 #QUEUE_HOST = os.getenv('QUEUE_HOST', 'localhost')
-QUEUE_NAME = os.getenv('QUEUE_NAME', 'test')
+QUEUE_NAME = os.getenv('QUEUE_NAME', 'test_queue')
 ALERTS_QUEUE_PRIMARY = os.getenv('ALERTS_QUEUE_PRIMARY', 'alerts-queue-1')
 ALERTS_QUEUE_SECONDARY = os.getenv('ALERTS_QUEUE_SECONDARY', 'alerts-queue-2')
 
@@ -18,7 +18,7 @@ class Alert(BaseModel):
     flow: float
     location: str
 
-def create_queue(alert:Alert):
+def execute_measure(alert:Alert):
     hostSend = balance_endpoints()
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostSend, port=5672))
     channel = connection.channel()
@@ -43,7 +43,7 @@ endpoint_flag = True
 def measure(alert:Alert):
     try:
         # Ejecutamos el envio de la alerta a la cola y además obtenemos el mensaje para enviar como response.
-        sendResponse = create_queue(alert)
+        sendResponse = execute_measure(alert)
         return JSONResponse(sendResponse, status_code=200)
     except Exception as e:
         print(e)
