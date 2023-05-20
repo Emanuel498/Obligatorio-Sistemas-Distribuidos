@@ -42,6 +42,7 @@ services:
       - ALERTS_QUEUE_PRIMARY=alerts-queue-1
       - ALERTS_QUEUE_SECONDARY=alerts-queue-2
       - QUEUE_NAME=test_queue
+      - PYTHONUNBUFFERED=1
     depends_on:
       alerts-queue-1:
         condition: service_healthy
