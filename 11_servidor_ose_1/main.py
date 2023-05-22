@@ -21,6 +21,7 @@ def main(queueName, host):
     channel.start_consuming()
 
 if __name__ == '__main__':
+    print('Test')
     thread1 = threading.Thread(target=main, args=(QUEUE_NAME, ALERTS_QUEUE_PRIMARY))
     thread2 = threading.Thread(target=main, args=(QUEUE_NAME, ALERTS_QUEUE_SECONDARY))
     
