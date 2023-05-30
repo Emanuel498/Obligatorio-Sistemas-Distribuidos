@@ -1,6 +1,14 @@
 version: "3.9"
 services:
-  producer:
+  splitter:
+    build: ./2_splitter
+    depends_on:
+      alerts-queue-1:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+
+  producer-alerts:
     build: ./3_sharding
     environment:
       - ALERTS_QUEUE_PRIMARY=alerts-queue-1
@@ -10,7 +18,7 @@ services:
       alerts-queue-1:
         condition: service_healthy
     ports:
-      - "80:80"
+      - "8081:80"
 
   alerts-queue-1:
     image: rabbitmq:3-alpine
