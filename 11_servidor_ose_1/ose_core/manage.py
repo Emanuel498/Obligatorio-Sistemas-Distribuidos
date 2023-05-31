@@ -19,5 +19,5 @@ def main():
 
 
 if __name__ == '__main__':
-    print('HOLA')
+    print('HOLA', flush=True)
     main()

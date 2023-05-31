@@ -22,4 +22,4 @@ COPY . /app/
 EXPOSE 8000
 
 # Run the Celery worker and the Django application using Gunicorn
-CMD celery -A ose_core worker --loglevel=info & gunicorn ose_core.wsgi:application --bind 0.0.0.0:8000 --log-level debug
+CMD celery -A ose_core worker --loglevel=info & gunicorn ose_core.wsgi:application --bind 0.0.0.0:8000 --capture-output --log-level debug
