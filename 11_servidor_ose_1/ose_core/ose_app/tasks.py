@@ -15,6 +15,7 @@ def consume_queue():
     channel.queue_declare(queue=QUEUE_NAME)
 
     def callback(ch, method, properties, body):
+        print('HOLA')
         print(" [x] Received %r" % body)
         #process_queue_item.delay(body.decode())
 

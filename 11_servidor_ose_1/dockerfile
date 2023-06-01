@@ -21,5 +21,10 @@ COPY . /app/
 # Expose the port that Django runs on (default: 8000)
 EXPOSE 8000
 
-# Run the Celery worker and the Django application using Gunicorn
-CMD celery -A ose_core worker --loglevel=info & gunicorn ose_core.wsgi:application --bind 0.0.0.0:8000 --capture-output --log-level debug
+# Run the Django development server in the background
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+# Add your Python script command here
+CMD ["python", "consumer.py"]
+
+CMD ["bash", "-c", "python3 consumer.py & python3 manage.py runserver 0.0.0.0:8000"]
