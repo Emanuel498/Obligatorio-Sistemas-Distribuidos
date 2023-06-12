@@ -3,7 +3,8 @@ import pika, sys, os, threading
 from celery import shared_task
 
 QUEUE_NAME = os.getenv('QUEUE_NAME', 'test_queue')
-ALERTS_QUEUE_PRIMARY = os.getenv('ALERTS_QUEUE_PRIMARY', 'alerts-queue-1')
+#ALERTS_QUEUE_PRIMARY = os.getenv('ALERTS_QUEUE_PRIMARY', 'alerts-queue-1')
+ALERTS_QUEUE_PRIMARY ='localhost'
 ALERTS_QUEUE_SECONDARY = os.getenv('ALERTS_QUEUE_SECONDARY', 'alerts-queue-2')
 
 
@@ -14,10 +15,10 @@ def consume_queue():
     channel.queue_declare(queue=QUEUE_NAME)
 
     def callback(ch, method, properties, body):
+        print('HOLA')
         print(" [x] Received %r" % body)
         #process_queue_item.delay(body.decode())
 
     channel.basic_consume(queue=QUEUE_NAME, on_message_callback=callback, auto_ack=True)
 
-    print("Consuming messages from the queue. Press Ctrl+C to exit.")
     channel.start_consuming()

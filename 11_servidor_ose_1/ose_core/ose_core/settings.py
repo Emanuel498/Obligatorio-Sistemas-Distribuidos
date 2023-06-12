@@ -104,6 +104,20 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
@@ -128,6 +142,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CELERY_BROKER_URL = "amqp://guest:guest@alerts-queue-1:5672//"
+#CELERY_BROKER_URL = "amqp://guest:guest@alerts-queue-1:5672//"
 #CELERY_RESULT_BACKEND = 'django-db'
 
 # Celery configuration
