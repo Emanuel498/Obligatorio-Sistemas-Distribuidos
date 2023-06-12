@@ -47,9 +47,22 @@
     - Luego, en una nueva terminal, ejecutamos ``` docker compose up 11_servidor_ose_1 ``` y esperamos a que levante.
 3. Ahora podemos tirar las alertas por POSTMAN como describimos anteriormente.
 
+### ¿Como crear un super user en Django (tiene acceso al admin)?
+1. docker ps -> para obtener el ID del contenedor donde esta corriendo el servidor de Django
+2. copiar el CONTAINER ID de la imagen obligatorio-sistemas-distribuidos_11_servidor_ose_1
+3. docker exec -it {CONTAINER ID} bash
+4. Ejecutar python manage.py createsuperuser
+
+### ¿Como visualizar los datos del admin?
+1. entrar en http://localhost:8000/admin/
+2. Poner credenciales 
+
+
+
 
 ## 🏓🏓 Soluciones a implementar para algunos errores que se nos presentaron 🏓🏓
 ### ¿Qué hacemos si dentro de /3_sharding/main.py tenemos una advertencia al importar pika?
 
 1. Confirmemos que tenemos la última versión de pip3 realizando: ``` pip install --upgrade pip ```
 2. Luego tiremos el siguiente comando para que actualice la libreria de pika: ``` pip3 install pika ```
+

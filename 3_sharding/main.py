@@ -18,7 +18,7 @@ class Alert(BaseModel):
     flow: float
     location: str
 
-def execute_measure(alert:Alert):
+def execute_sendAlert(alert:Alert):
     hostSend = balance_endpoints()
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostSend, port=5672))
     channel = connection.channel()
@@ -39,11 +39,11 @@ app = FastAPI()
 # Flag que nos ayudará a equilibrar el envio a las colas de la función balance_endpoints()
 endpoint_flag = True
 
-@app.post("/measure")
-def measure(alert:Alert):
+@app.post("/sendAlert")
+def sendAlert(alert:Alert):
     try:
         # Ejecutamos el envio de la alerta a la cola y además obtenemos el mensaje para enviar como response.
-        sendResponse = execute_measure(alert)
+        sendResponse = execute_sendAlert(alert)
         return JSONResponse(sendResponse, status_code=200)
     except Exception as e:
         print(e)
