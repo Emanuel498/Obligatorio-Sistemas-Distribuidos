@@ -1,0 +1,6 @@
+FROM rabbitmq:latest
+
+# Enable the MQTT plugin
+RUN rabbitmq-plugins enable rabbitmq_mqtt
+
+EXPOSE 5673 15673
