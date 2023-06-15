@@ -1,0 +1,30 @@
+# Use an official Python runtime as the base image
+FROM python:3.9
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Set the working directory in the container
+WORKDIR /app/ose_core/
+
+# Install dependencies
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r ../requirements.txt
+
+# Install Gunicorn
+RUN pip install gunicorn
+
+# Copy the Django project code to the container
+COPY . /app/
+
+# Expose the port that Django runs on (default: 8000)
+EXPOSE 8000
+
+# Run the Django development server in the background
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+# Add your Python script command here
+CMD ["python", "consumer.py"]
+
+CMD ["bash", "-c", "python3 consumer.py & python3 manage.py runserver 0.0.0.0:8000"]
