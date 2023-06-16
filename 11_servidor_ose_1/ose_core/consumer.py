@@ -25,7 +25,6 @@ def alerts(queueName, host):
 
     channel.basic_consume(queue=queueName, on_message_callback=callback, auto_ack=True)
 
-    print(' [*] Waiting for messages. To exit press CTRL+C')
     channel.start_consuming()
     
 def data(queueName, host):
@@ -40,7 +39,6 @@ def data(queueName, host):
 
     channel.basic_consume(queue=queueName, on_message_callback=callback, auto_ack=True)
 
-    print(' [*] Waiting for messages. To exit press CTRL+C')
     channel.start_consuming()
 
 if __name__ == '__main__':

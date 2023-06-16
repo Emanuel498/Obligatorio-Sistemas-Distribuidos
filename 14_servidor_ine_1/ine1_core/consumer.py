@@ -5,9 +5,9 @@ QUEUE_NAME = os.getenv('QUEUE_NAME', 'test_queue')
 ALERTS_QUEUE_PRIMARY = os.getenv('ALERTS_QUEUE_PRIMARY', 'alerts-queue-1')
 ALERTS_QUEUE_SECONDARY = os.getenv('ALERTS_QUEUE_SECONDARY', 'alerts-queue-2')
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ose_core.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ine1_core.settings")
 django.setup()
-from ose_app.models import Meassure
+from ine1_app.models import Data
 
 def main(queueName, host):
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, port=5672))
@@ -17,7 +17,7 @@ def main(queueName, host):
     def callback(ch, method, properties, body):
         data = json.loads(body)
         print(data['name'])
-        Meassure.objects.create(name=data['name'], flow=data['flow'], location=data['location'])
+        Data.objects.create(name=data['name'], flow=data['flow'], location=data['location'])
 
     channel.basic_consume(queue=queueName, on_message_callback=callback, auto_ack=True)
 
