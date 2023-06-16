@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Set the working directory in the container
-WORKDIR /app/ose_core/
+WORKDIR /app/ine1_core/
 
 # Install dependencies
 COPY requirements.txt /app/

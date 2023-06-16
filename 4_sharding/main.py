@@ -7,7 +7,7 @@ import pika
 import json
 import os
 
-QUEUE_DATA = os.getenv('QUEUE_DATA', 'data_queue')
+QUEUE_DATA = os.getenv('QUEUE_NAME', 'data_queue')
 DATA_QUEUE_PRIMARY = os.getenv('DATA_QUEUE_PRIMARY', 'data-queue-1')
 DATA_QUEUE_SECONDARY = os.getenv('DATA_QUEUE_SECONDARY', 'data-queue-2')
 

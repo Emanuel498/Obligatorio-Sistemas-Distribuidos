@@ -27,7 +27,7 @@ services:
     environment:
       - DATA_QUEUE_PRIMARY=data-queue-1
       - DATA_QUEUE_SECONDARY=data-queue-2
-      - QUEUE_DATA=data_queue
+      - QUEUE_NAME=data_queue
     depends_on:
       data-queue-1:
         condition: service_healthy
@@ -103,11 +103,11 @@ services:
   14_servidor_ine_1:
     build: ./14_servidor_ine_1
     ports:
-      - "8000:8000"
+      - "8008:8000"
     environment:
       - DATA_QUEUE_PRIMARY=data-queue-1
       - DATA_QUEUE_SECONDARY=data-queue-2
-      - QUEUE_DATA=data_queue
+      - QUEUE_NAME=data_queue
       - PYTHONUNBUFFERED=1
     depends_on:
     - data-queue-1
