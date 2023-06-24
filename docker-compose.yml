@@ -56,7 +56,7 @@ services:
     ports:
       - "5673:5672"
     expose:
-      - "5672"
+      - "5673"
 
   data-queue-1:
     image: rabbitmq:3-alpine
@@ -66,9 +66,9 @@ services:
       timeout: 10s
       retries: 3
     ports:
-      - "5674:5673"
+      - "5674:5672"
     expose:
-      - "5673"
+      - "5674"
 
   data-queue-2:
     image: rabbitmq:3-alpine
@@ -78,9 +78,9 @@ services:
       timeout: 10s
       retries: 3
     ports:
-      - "5675:5673"
+      - "5675:5672"
     expose:
-      - "5673"
+      - "5675"
 
   11_servidor_ose_1:
     build: ./11_servidor_ose_1

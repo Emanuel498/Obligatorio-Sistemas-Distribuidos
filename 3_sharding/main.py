@@ -45,7 +45,7 @@ def sendAlert(alert:Alert):
         sendResponse = execute_sendAlert(alert)
         return JSONResponse(sendResponse, status_code=200)
     except Exception as e:
-        print(e)
+        print("An exception occurred:", type(e).__name__)
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 # Realizamos un round robin básico para que vaya cambiando de queues.

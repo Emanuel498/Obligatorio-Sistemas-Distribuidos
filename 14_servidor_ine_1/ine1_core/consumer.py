@@ -10,7 +10,7 @@ django.setup()
 from ine1_app.models import Data
 
 def data(queueName, host):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, port=5673))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, port=5672))
     channel = connection.channel()
     channel.queue_declare(queue=queueName)
 

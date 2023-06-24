@@ -19,7 +19,9 @@ class Data(BaseModel):
 
 def execute_sendData(data:Data):
     hostSend = balance_endpoints()
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostSend, port=5673))
+    print(hostSend)
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostSend, port=5672))
+    print(f"34234")
     channel = connection.channel()
     #Declaramos la cola que va a utiliar
     channel.queue_declare(queue=QUEUE_DATA) 
@@ -45,7 +47,7 @@ def sendData(data:Data):
         sendResponse = execute_sendData(data)
         return JSONResponse(sendResponse, status_code=200)
     except Exception as e:
-        print(e)
+        print(str(e))
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 # Realizamos un round robin básico para que vaya cambiando de queues.
