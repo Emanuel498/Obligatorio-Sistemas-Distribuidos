@@ -25,7 +25,7 @@ services:
       alerts-queue-1:
         condition: service_healthy
     ports:
-      - "8081:80"
+      - "9090:80"
   
   producer-data:
     build: ./4_sharding
@@ -42,9 +42,9 @@ services:
   alerts-queue-1:
     image: rabbitmq:3-alpine
     healthcheck:
-      test: rabbitmq-diagnostics -q ping
+      test: ["CMD", "rabbitmqctl", "status"]
       interval: 10s
-      timeout: 10s
+      timeout: 5s
       retries: 3
     ports:
       - "5672:5672"
@@ -54,9 +54,9 @@ services:
   alerts-queue-2:
     image: rabbitmq:3-alpine
     healthcheck:
-      test: rabbitmq-diagnostics -q ping
+      test: ["CMD", "rabbitmqctl", "status"]
       interval: 10s
-      timeout: 10s
+      timeout: 5s
       retries: 3
     ports:
       - "5673:5672"
@@ -66,9 +66,9 @@ services:
   data-queue-1:
     image: rabbitmq:3-alpine
     healthcheck:
-      test: rabbitmq-diagnostics -q ping
+      test: ["CMD", "rabbitmqctl", "status"]
       interval: 10s
-      timeout: 10s
+      timeout: 5s
       retries: 3
     ports:
       - "5674:5672"
@@ -78,9 +78,9 @@ services:
   data-queue-2:
     image: rabbitmq:3-alpine
     healthcheck:
-      test: rabbitmq-diagnostics -q ping
+      test: ["CMD", "rabbitmqctl", "status"]
       interval: 10s
-      timeout: 10s
+      timeout: 5s
       retries: 3
     ports:
       - "5675:5672"
@@ -97,13 +97,63 @@ services:
       - QUEUE_ALERT=alert_queue
       - DATA_QUEUE_PRIMARY=data-queue-1
       - DATA_QUEUE_SECONDARY=data-queue-2
+      - DJANGO_SETTINGS_MODULE=ose_core.settings
       - QUEUE_DATA=data_queue
       - PYTHONUNBUFFERED=1
     depends_on:
-    - alerts-queue-1
-    - alerts-queue-2
-    - data-queue-1
-    - data-queue-2
+      alerts-queue-1:
+        condition: service_healthy
+      alerts-queue-2:
+        condition: service_healthy
+      data-queue-1:
+        condition: service_healthy
+      data-queue-2:
+        condition: service_healthy
+
+  12_servidor_ose_2:
+    build: ./12_servidor_ose_2
+    ports:
+      - "8081:8000"
+    environment:
+      - ALERTS_QUEUE_PRIMARY=alerts-queue-1
+      - ALERTS_QUEUE_SECONDARY=alerts-queue-2
+      - QUEUE_ALERT=alert_queue
+      - DATA_QUEUE_PRIMARY=data-queue-1
+      - DATA_QUEUE_SECONDARY=data-queue-2
+      - QUEUE_DATA=data_queue
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      alerts-queue-1:
+        condition: service_healthy
+      alerts-queue-2:
+        condition: service_healthy
+      data-queue-1:
+        condition: service_healthy
+      data-queue-2:
+        condition: service_healthy
+  
+  ose_db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ose_db
+    volumes:
+      - postgres_data_ose:/var/lib/postgresql/data
+    command: postgres -c 'shared_preload_libraries=pg_stat_statements' -c 'log_statement=all'
+    ports:
+      - "5432:5432"
+  
+  nginx_ose:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx_ose.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - 11_servidor_ose_1
+      - 12_servidor_ose_2
 
   14_servidor_ine_1:
     build: ./14_servidor_ine_1
@@ -115,5 +165,12 @@ services:
       - QUEUE_NAME=data_queue
       - PYTHONUNBUFFERED=1
     depends_on:
-    - data-queue-1
-    - data-queue-2
+      data-queue-1:
+        condition: service_healthy
+      data-queue-2:
+        condition: service_healthy
+
+volumes:
+  postgres_data_ose:
+
+  

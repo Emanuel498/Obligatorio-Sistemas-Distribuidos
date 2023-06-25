@@ -9,17 +9,22 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ine1_core.settings")
 django.setup()
 from ine1_app.models import Data
 
-def data(queueName, host):
+def data(exchangeName, host):
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, port=5672))
     channel = connection.channel()
-    channel.queue_declare(queue=queueName)
+    channel.exchange_declare(exchange=exchangeName, exchange_type='fanout')
+
+    result = channel.queue_declare(queue='', exclusive=True)
+    queue_name = result.method.queue
+
+    channel.queue_bind(exchange=exchangeName, queue=queue_name)
 
     def callback(ch, method, properties, body):
         data = json.loads(body)
         print(data['name'])
         Data.objects.create(name=data['name'], flow=data['flow'], location=data['location'])
 
-    channel.basic_consume(queue=queueName, on_message_callback=callback, auto_ack=True)
+    channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
 
     channel.start_consuming()
 
