@@ -24,11 +24,11 @@ def execute_sendData(data:Data):
     print(f"34234")
     channel = connection.channel()
     #Declaramos la cola que va a utiliar
-    channel.queue_declare(queue=QUEUE_DATA) 
+    channel.exchange_declare(exchange=QUEUE_DATA, exchange_type='fanout') 
     
     #Publico los mensajes en la cola
     jsonData = json.dumps(data.__dict__)
-    channel.basic_publish(exchange='', routing_key=QUEUE_DATA, body=jsonData)
+    channel.basic_publish(exchange=QUEUE_DATA, routing_key='', body=jsonData)
 
     connection.close()
     # Realizamos un mensaje legible para el usuario final.
