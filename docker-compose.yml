@@ -164,8 +164,21 @@ services:
         condition: service_healthy
       data-queue-2:
         condition: service_healthy
+  
+  ine_db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ine_db
+    volumes:
+      - postgres_data_ine:/var/lib/postgresql/data
+    command: postgres -c 'shared_preload_libraries=pg_stat_statements' -c 'log_statement=all'
+    ports:
+      - "5433:5432"
 
 volumes:
   postgres_data_ose:
-
+  postgres_data_ine:
   
