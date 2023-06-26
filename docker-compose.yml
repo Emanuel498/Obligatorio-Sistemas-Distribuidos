@@ -165,6 +165,21 @@ services:
       data-queue-2:
         condition: service_healthy
   
+  15_servidor_ine_2:
+    build: ./15_servidor_ine_2
+    ports:
+      - "8009:8000"
+    environment:
+      - DATA_QUEUE_PRIMARY=data-queue-1
+      - DATA_QUEUE_SECONDARY=data-queue-2
+      - QUEUE_NAME=data_queue
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      data-queue-1:
+        condition: service_healthy
+      data-queue-2:
+        condition: service_healthy
+  
   ine_db:
     image: postgres:latest
     restart: always
@@ -177,6 +192,16 @@ services:
     command: postgres -c 'shared_preload_libraries=pg_stat_statements' -c 'log_statement=all'
     ports:
       - "5433:5432"
+
+  nginx_ine:
+    image: nginx:latest
+    ports:
+      - 81:80
+    volumes:
+      - ./nginx_ine.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - 14_servidor_ine_1
+      - 15_servidor_ine_2
 
 volumes:
   postgres_data_ose:
