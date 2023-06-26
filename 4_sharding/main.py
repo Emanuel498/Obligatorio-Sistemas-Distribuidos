@@ -19,9 +19,7 @@ class Data(BaseModel):
 
 def execute_sendData(data:Data):
     hostSend = balance_endpoints()
-    print(hostSend)
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostSend, port=5672))
-    print(f"34234")
     channel = connection.channel()
     #Declaramos la cola que va a utiliar
     channel.exchange_declare(exchange=QUEUE_DATA, exchange_type='fanout') 

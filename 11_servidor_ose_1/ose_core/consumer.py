@@ -28,6 +28,8 @@ def populate(exchangeName, host, model):
         print('data consumida', data)
         print(data['name'])
         model.objects.create(name=data['name'], flow=data['flow'], location=data['location'])
+        if data['flow'] < 12.8:
+            Alerts.objects.create(name=data['name'], flow=data['flow'], location=data['location'])
 
     channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
 
