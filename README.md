@@ -43,8 +43,8 @@
 
 1. Hacemos un ``` docker compose build ``` dónde vamos a buildear todo el proyecto.
 2. Ahora tendremos que levantar por separado las queue y el producer, del servidor de OSE (esto de momento es así porque el servidor de OSE no es capaz de esperar hasta que terminen de levantar las colas y tira un error):
-    - Ejecutamos ``` docker compose up  alerts-queue-1 alerts-queue-2 producer``` y esperamos hasta que levante todo correctamente.
-    - Luego, en una nueva terminal, ejecutamos ``` docker compose up 11_servidor_ose_1 ``` y esperamos a que levante.
+    - Ejecutamos ``` docker compose up``` y esperamos hasta que levante todo correctamente.
+    - Luego, si es la primera vez que lo corremos, vamos a la carpeta _11_servidor_ose_1/ose_core_ y ejecutamos `python manage.py migrate`
 3. Ahora podemos tirar las alertas por POSTMAN como describimos anteriormente.
 
 ### ¿Como crear un super user en Django (tiene acceso al admin)?
