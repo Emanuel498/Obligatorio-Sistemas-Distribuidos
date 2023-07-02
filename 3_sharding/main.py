@@ -7,8 +7,7 @@ import pika
 import json
 import os
 
-#QUEUE_HOST = os.getenv('QUEUE_HOST', 'localhost')
-QUEUE_NAME = os.getenv('QUEUE_NAME', 'test_queue')
+QUEUE_ALERT = os.getenv('QUEUE_ALERT', 'alert_queue')
 ALERTS_QUEUE_PRIMARY = os.getenv('ALERTS_QUEUE_PRIMARY', 'alerts-queue-1')
 ALERTS_QUEUE_SECONDARY = os.getenv('ALERTS_QUEUE_SECONDARY', 'alerts-queue-2')
 
@@ -23,11 +22,11 @@ def execute_sendAlert(alert:Alert):
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostSend, port=5672))
     channel = connection.channel()
     #Declaramos la cola que va a utiliar
-    channel.queue_declare(queue=QUEUE_NAME) 
+    channel.queue_declare(queue=QUEUE_ALERT) 
     
     #Publico los mensajes en la cola
     jsonAlert = json.dumps(alert.__dict__)
-    channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=jsonAlert)
+    channel.basic_publish(exchange='', routing_key=QUEUE_ALERT, body=jsonAlert)
 
     connection.close()
     # Realizamos un mensaje legible para el usuario final.
@@ -46,7 +45,7 @@ def sendAlert(alert:Alert):
         sendResponse = execute_sendAlert(alert)
         return JSONResponse(sendResponse, status_code=200)
     except Exception as e:
-        print(e)
+        print("An exception occurred:", type(e).__name__)
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 # Realizamos un round robin básico para que vaya cambiando de queues.
