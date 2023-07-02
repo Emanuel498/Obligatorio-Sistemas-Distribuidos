@@ -22,11 +22,11 @@ def execute_sendAlert(alert:Alert):
     connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostSend, port=5672))
     channel = connection.channel()
     #Declaramos la cola que va a utiliar
-    channel.queue_declare(queue=QUEUE_ALERT) 
+    channel.exchange_declare(exchange=QUEUE_ALERT, exchange_type='fanout') 
     
     #Publico los mensajes en la cola
     jsonAlert = json.dumps(alert.__dict__)
-    channel.basic_publish(exchange='', routing_key=QUEUE_ALERT, body=jsonAlert)
+    channel.basic_publish(exchange=QUEUE_ALERT, routing_key='', body=jsonAlert)
 
     connection.close()
     # Realizamos un mensaje legible para el usuario final.
